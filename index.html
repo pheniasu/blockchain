@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DApp Event Listener</title>
+</head>
+<body>
+
+<h2>Assignment DApp - Event Listener</h2>
+<button onclick="connect()">Connect Wallet</button>
+
+<p id="status"></p>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+
+<script>
+
+let contract;
+
+async function connect() {
+    if (!window.ethereum) {
+        alert("MetaMask not installed!");
+        return;
+    }
+
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const contractAddress = "0x8E81BeD1cE748a51618C41c08ECbA6fd625C24BF";
+
+    const abi = [
+        "event Submitted(address student, uint assignmentId)",
+        "event Approved(address student)"
+    ];
+
+    contract = new ethers.Contract(contractAddress, abi, provider);
+
+    document.getElementById("status").innerText = "Connected to blockchain";
+
+    listenEvents();
+}
+
+function listenEvents() {
+
+    contract.on("Submitted", (student, assignmentId) => {
+        console.log("New Submission:");
+        console.log("Student:", student);
+        console.log("Assignment ID:", assignmentId.toString());
+
+        document.getElementById("status").innerText =
+            "New Submission from " + student + " (ID: " + assignmentId + ")";
+    });
+
+    contract.on("Approved", (student) => {
+        console.log("Approved:", student);
+
+        document.getElementById("status").innerText =
+            "Submission Approved for " + student;
+    });
+}
+
+</script>
+
+</body>
+</html>
